@@ -1,0 +1,5 @@
+py/__pycache__/*
+py/mxh-stack-venv/*
+py/user/__pycache__/*
+py/apps/__pycache__/*
+py/apps/csc/__pycache__/*

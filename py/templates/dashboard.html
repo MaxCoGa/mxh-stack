@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+
+
+{% block content %}
+<title>Dashboard</title>
+<h1>Dashboard</h1>
+
+{{ session['logged_in']}}
+{{ session['user']}}
+
+  <div class="card-wrapper">
+
+    <div class="card">
+
+      <h1 class="center">Dashboard</h1>
+      <p class="center">You are currently logged in.</p>
+
+      <div class="center">
+        <a href="/user/signout" class="btn btn--secondary">Sign Out</a>
+      </div>
+
+      <div class="center">
+        <a href="/user/delete" class="btn btn--secondary">Delete</a>
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <h2 class="center">Your Info</h2>
+
+      <p>
+        <strong>ID:</strong> {{ session['user']['_id'] }}<br>
+        <strong>Username:</strong> {{ session['user']['username'] }}<br>
+        <strong>Avatar:</strong>
+        
+        <img src="/user/avatar/{{ session['user']['username'] }}" id="Avatar">
+        <script type="text/javascript">
+          // window.location = "http://www.mywebsite.com/"
+          async function loadNames() {
+            const response = await fetch("/user/avatar/{{ session['user']['username'] }}", {
+                                          method: 'GET'
+                                        });
+
+            const names = await response.json();
+            
+            var img = document.createElement('img');
+            img.src = "data:image/png;base64," + names;
+            document.getElementById("Avatar").src = img.src;
+            document.getElementById("Avatar").width = 64;
+            document.getElementById("Avatar").height = 64;
+          }
+          loadNames();
+
+        </script>
+        <br>
+
+
+      </p>
+
+    </div>
+    
+
+  </div>
+
+
+  <div class="card-wrapper">
+
+    <div class="card">
+
+      <h1 class="center">Apps</h1>
+      <p class="center">Click on the button</p>
+
+      <div class="center">
+        <a href="/csc/" class="btn btn--secondary">CSC</a>
+      </div>
+
+      <div class="center">
+        <a href="/psv/" class="btn btn--secondary">PSV</a>
+      </div>
+
+      <div class="center">
+        <a href="/mpa/" class="btn btn--secondary">MPA</a>
+      </div>
+
+
+    </div>
+  </div>
+{% endblock %}

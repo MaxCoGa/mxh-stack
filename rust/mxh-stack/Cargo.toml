@@ -1,0 +1,27 @@
+[package]
+name = "mxh-stack"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web-lab = "0.20"
+actix-utils = "3"
+
+env_logger = "0.11"
+log = "0.4"
+
+actix-files = "0.6.5"
+actix-web = { version = "4"} #, features = ["openssl"]  }
+serde = { version = "1.0.197", features = ["derive"] }
+# openssl = "0.10"
+minijinja = { version = "1", features = ["loader"] }
+minijinja-autoreload = "1"
+secrecy = "0.8.0"
+#mongodb = "2.8.2"
+
+
+[dependencies.mongodb]
+version = "2.8.2"
+

@@ -1,0 +1,139 @@
+/*
+  Colors: http://getuicolors.com
+*/
+
+:root {
+    --black: #000000;
+    --almost-black: #222222;
+    --white: #ffffff;
+    --almost-white: #FBFBFB;
+    --grey-light: #CFD8DC;
+    --grey: #B0BEC5;
+    --grey-medium: #78909C;
+    --grey-dark: #455A64;
+    --primary: #710071;
+    --primary-dark: #BE00BE;
+    --secondary: #710071;
+    --secondary-dark: #BE00BE;
+    --red: #EF4836;
+    --pastelt:#f4e8ff;
+    --amesthystb: #120024;
+    --cardame: #291939;
+  }
+
+.content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+
+  
+  .join {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+  }
+  
+  .create-btn {
+    width: 100%;
+    color: var(--pastelt);
+    background: var(--primary);
+  }
+  
+  .create-btn:hover {
+    background: var(--primary-dark);
+  }
+
+  .send-btn {
+    color: var(--pastelt);
+    background: var(--primary);
+  }
+  
+  .send-btn:hover {
+    background: var(--primary-dark);
+  }
+
+
+  .message-box {
+    border-color: var(--cardame);
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 10px;
+    background-color: var(--almost-black);
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    width: 80vw;
+    align-items: stretch;
+  }
+  
+  .messages {
+    overflow-y: scroll;
+    flex: 1;
+    width: 100%;
+  }
+  
+  .inputs {
+    padding: 10px;
+    display: flex;
+  }
+
+  .field {
+    margin: 0 0 24px;
+    padding: 11px 16px 9px;
+    width: 100%;
+    font-size: 16px;
+    line-height: 26px;
+    color: var(--pastelt);
+    border: 1px solid var(--pastelt);
+    border-radius: 4px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+    display: block;
+    background: var(--black);
+    transition: border-color .15s ease;
+  }
+  
+  .field:focus {
+    border-color: var(--pastelt);
+    outline: none;
+  }
+
+  h2 {
+    text-align: center;
+  }
+  
+  #message {
+    flex: 1;
+  }
+  
+  .text {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .muted {
+    font-size: 10px;
+    color: darkgray;
+  }
+
+  body {
+    margin: 0;
+    font-family: sans-serif;
+    font-size: 18px;
+    line-height: 28px;
+    color: var(--pastelt);
+    background: var(--amesthystb);
+  }
