@@ -1,4 +1,10 @@
-use std::{collections::HashMap, env, path::PathBuf};
+use std::{
+    collections::HashMap, 
+    env,     
+    fs::File,
+    io::{self, Read as _},
+    path::PathBuf
+};
 
 use actix_utils::future::{ready, Ready};
 use actix_web::{
@@ -13,6 +19,10 @@ use actix_web_lab::respond::Html;
 use actix_files::Files;  
 use minijinja::path_loader;
 use minijinja_autoreload::AutoReloader;
+use openssl::{
+    pkey::{PKey, Private},
+    ssl::{SslAcceptor, SslFiletype, SslMethod},
+};
 
 struct MiniJinjaRenderer {
     tmpl_env: web::Data<minijinja_autoreload::AutoReloader>,
@@ -123,9 +133,28 @@ pub use routes::*;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    // load TLS keys
+    // to create a self-signed temporary cert for testing:
+    // `openssl req -x509 -newkey rsa:4096 -nodes -keyout key.pem -out cert.pem -days 365 -subj '/C=CN/CN=localhost'`
+    // windows fix btw: https://stackoverflow.com/questions/65553557/why-rust-is-failing-to-build-command-for-openssl-sys-v0-9-60-even-after-local-in
+    // build TLS config from files
+    let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
+
+    // set the encrypted private key
+    builder
+        .set_private_key(&load_encrypted_private_key())
+        .unwrap();
+    // builder
+    //     .set_private_key_file("./cert/key-pass.pem", openssl::ssl::SslFiletype::PEM)
+    //     .unwrap();
+
+    // set the certificate chain file location
+    builder.set_certificate_chain_file("./cert/cert-pass.pem").unwrap();
+
+
+    // MONGODB CLIENT
     // let client = startmongodb().await.unwrap();
     // let client_data = web::Data::new(startmongodb());
-
     // A Client is needed to connect to MongoDB:
     // let client_uri = "mongodb://127.0.0.1:27017";
     // let mut options = ClientOptions::parse(&client_uri).await?;
@@ -191,7 +220,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::default())
     })
     .workers(2)
-    .bind(("127.0.0.1", 8080))?
+    .bind(("0.0.0.0", 8080))?
+    .bind_openssl("0.0.0.0:8443", builder)?
     .run()
     .await
 }
@@ -234,4 +264,13 @@ fn get_error_response<B>(res: &ServiceResponse<B>, error: &str) -> HttpResponse 
 
         Err(_) => fallback(error),
     }
+}
+
+
+fn load_encrypted_private_key() -> PKey<Private> {
+    let mut file = File::open("./cert/key-pass.pem").unwrap();
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer).expect("Failed to read file");
+
+    PKey::private_key_from_pem_passphrase(&buffer, b"allo").unwrap()
 }
