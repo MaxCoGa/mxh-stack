@@ -2,6 +2,7 @@ use std::{collections::HashMap, env, path::PathBuf};
 
 use actix_utils::future::{ready, Ready};
 use actix_web::{
+    get, post,
     dev::{self, ServiceResponse},
     error,
     http::{header::ContentType, StatusCode},
@@ -65,6 +66,12 @@ async fn index(
     } else {
         tmpl_env.render("index.html", ())
     }
+}
+
+
+#[get("/favicon.ico")]
+async fn favicon() -> actix_web::Result<actix_files::NamedFile> {
+    Ok(actix_files::NamedFile::open("static/favicon.ico")?)
 }
 
 
@@ -171,6 +178,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(tmpl_reloader.clone())
             .service(web::resource("/").route(web::get().to(index)))
             .service(Files::new("/static","./static/"))
+            .service(favicon)
             // .service(Files::new("/static", std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("static")))
             .route("/home", web::get().to(home))
 
