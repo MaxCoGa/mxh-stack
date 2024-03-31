@@ -10,11 +10,13 @@ use actix_utils::future::{ready, Ready};
 use actix_web::{
     get, post,
     dev::{self, ServiceResponse},
-    error,
+    // Error,
     http::{header::ContentType, StatusCode},
     middleware::{ErrorHandlerResponse, ErrorHandlers, Logger},
     web, App, FromRequest, HttpRequest, HttpResponse, HttpServer, Responder, Result,
+    cookie::Key,
 };
+use actix_session::{Session, SessionMiddleware, storage::CookieSessionStore};
 use actix_web_lab::respond::Html;
 use actix_files::Files;  
 use minijinja::path_loader;
@@ -36,14 +38,14 @@ impl MiniJinjaRenderer {
     ) -> actix_web::Result<Html> {
         self.tmpl_env
             .acquire_env()
-            .map_err(|_| error::ErrorInternalServerError("could not acquire template env"))?
+            .map_err(|_| actix_web::error::ErrorInternalServerError("could not acquire template env"))?
             .get_template(tmpl)
-            .map_err(|_| error::ErrorInternalServerError("could not find template"))?
+            .map_err(|_| actix_web::error::ErrorInternalServerError("could not find template"))?
             .render(ctx.into())
             .map(Html)
             .map_err(|err| {
                 log::error!("{err}");
-                error::ErrorInternalServerError("template error")
+                actix_web::error::ErrorInternalServerError("template error")
             })
     }
 }
@@ -78,16 +80,33 @@ async fn index(
     }
 }
 
-
+// FALLBACK favicon
 #[get("/favicon.ico")]
 async fn favicon() -> actix_web::Result<actix_files::NamedFile> {
     Ok(actix_files::NamedFile::open("static/favicon.ico")?)
 }
 
 
+
+async fn sessionCookieTest(session: Session) -> Result<HttpResponse, actix_web::Error> {
+    // access session data
+    if let Some(count) = session.get::<i32>("counter")? {
+        session.insert("counter", count + 1)?;
+    } else {
+        session.insert("counter", 1)?;
+    }
+
+    Ok(HttpResponse::Ok().body(format!(
+        "Count is {:?}!",
+        session.get::<i32>("counter")?.unwrap()
+    )))
+}
+
+
+
 use mongodb::{Client, options::ClientOptions, Database};
 
-use std::error::Error;
+// use std::error::Error;
 async fn startmongodb() -> Result<Client, mongodb::error::Error>  { 
     // mongodb
     println!("STARTING MONGODB...");
@@ -133,6 +152,11 @@ pub use routes::*;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    // When using `Key::generate()` it is important to initialize outside of the
+    // `HttpServer::new` closure. When deployed the secret key should be read from a
+    // configuration file or environment variables.
+    let secret_key = Key::generate();
+
     // load TLS keys
     // to create a self-signed temporary cert for testing:
     // `openssl req -x509 -newkey rsa:4096 -nodes -keyout key.pem -out cert.pem -days 365 -subj '/C=CN/CN=localhost'`
@@ -197,9 +221,19 @@ async fn main() -> std::io::Result<()> {
     let tmpl_reloader = web::Data::new(tmpl_reloader);
 
     log::info!("starting HTTP server at http://localhost:8080");
+    log::info!("starting HTTPS server at https://localhost:8443");
 
     HttpServer::new(move || {
         App::new()
+            // SESSION COOKIE
+            .wrap(
+                // create cookie based session middleware
+                SessionMiddleware::builder(CookieSessionStore::default(), Key::from(&[0; 64]))
+                    .cookie_secure(false)
+                    .build()
+            )
+            .service(web::resource("/session").to(sessionCookieTest)) // test session cookie
+
             // MONGODB CONNECTION
             // .app_data(client_data)
             .app_data(web::Data::new(client.clone()))
